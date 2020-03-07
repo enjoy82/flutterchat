@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'auth.dart';
-
-const String _name = "Your Name";
 
 // ---------
 // チャットページ
@@ -12,34 +12,52 @@ class ChatPage extends StatefulWidget {
   ChatPage({this.auth, this.currentPageChatSelectSet});
   final BaseAuth auth;
   final VoidCallback currentPageChatSelectSet;
+  final WebSocketChannel channel = IOWebSocketChannel.connect('ws://118.27.27.77:1337');
   @override
-  State createState() => new _ChatPage();
+  _ChatPage createState() => new _ChatPage();
 }
 
 
 //TickerProviderStateMixinはvsync用
 class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
-  final List<ChatMessage> _messages = <ChatMessage>[];
   //メッセージリスト定義
-  final TextEditingController _textController = new TextEditingController();
+  List<ChatMessage> _messages;
+  TextEditingController _textController;
+  List<String> messageList = [];
   //Widgetで使うために定義、TextEditingControllerは既存
   //bool _isComposing = false;
+  //String _name = widget.auth.uid;  
+  _ChatPage(){
+    _messages = <ChatMessage>[];
+    _textController = new TextEditingController();
+    /*widget.channel.stream.listen((data) {
+      setState(() {
+        print(data);
+        messageList.add(data);
+      });
+    });*/
+  }
 
   void _handleSubmitted(String text) {
     //Widgetで埋め込むための関数ここでChatMessageテキストとコントローラ渡してつくってる
     _textController.clear();
+    print(text);
     ChatMessage message = new ChatMessage(
       text: text,
+      name: widget.auth.uid,
       animationController: new AnimationController(
         duration: new Duration(milliseconds: 700),
         vsync: this,
       ), 
     );
     if(message.text.length > 0){
-      setState(() {
+      //socketIO.sendMessage('new message', json.encode({'message': text}));
+      /*setState(() {
         _messages.insert(0, message);
         //計算量どうなの？メッセージの配列0にインソート
-      }); 
+      });*/
+      //widget.channel.sink.add(message);
+      widget.channel.sink.add(text);
     }
     message.animationController.forward();
   }
@@ -47,6 +65,7 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
   void dispose() {
     for (ChatMessage message in _messages)
       message.animationController.dispose();
+    widget.channel.sink.close();
     super.dispose();
   }    
 
@@ -69,14 +88,23 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
       children: <Widget>[
         new Flexible(
           //message
-          child: new ListView.builder(
+          child: StreamBuilder(
+            stream: widget.channel.stream,
+            builder: (context, snapshot) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24.0),
+                child: Text(snapshot.hasData ? '${snapshot.data}' : ''),
+              );
+            },
+          )
+          /*new ListView.builder(
             padding: new EdgeInsets.all(8.0),
             reverse: true, 
             itemBuilder: (_, int index) => _messages[index],
             //配列作製 謎挙動
             itemCount: _messages.length,
             //配列の個数指定 
-          ),
+          ),*/
         ), 
         new Divider(height: 1.0),
         new Container(
@@ -120,8 +148,9 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
 
 //チャットのUI
 class ChatMessage extends StatelessWidget {
-  ChatMessage({this.text, this.animationController});
+  ChatMessage({this.text, this.animationController, this.name});
   //定義
+  final String name;
   final String text;
   final AnimationController animationController;
   @override
@@ -138,14 +167,14 @@ class ChatMessage extends StatelessWidget {
           children: <Widget>[
             new Container(
               margin: const EdgeInsets.only(right: 16.0),
-              child: new CircleAvatar(child: new Text(_name[0])),
+              child: new CircleAvatar(child: new Text(name[0])),
             ),
             new Expanded(
               //メッセージ多いときに折り返してくれるUI
               child: new Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  new Text(_name, style: Theme.of(context).textTheme.subhead),
+                  new Text(name, style: Theme.of(context).textTheme.subhead),
                   new Container(
                     margin: const EdgeInsets.only(top: 5.0),
                     child: new Text(text),

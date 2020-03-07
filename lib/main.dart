@@ -44,7 +44,6 @@ enum CurrentPage {
 }
 
 class _RootPageState extends State<RootPage> {
-
   AuthStatus authStatus = AuthStatus.notSignedIn;
   CurrentPage currentPage = CurrentPage.LogInPage;
 
