@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'auth.dart';
+import 'dart:convert';
 
 // ---------
 // チャットページ
@@ -30,6 +30,7 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
   _ChatPage(){
     _messages = <ChatMessage>[];
     _textController = new TextEditingController();
+     
     /*widget.channel.stream.listen((data) {
       setState(() {
         print(data);
@@ -37,11 +38,17 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
       });
     });*/
   }
+  
 
   void _handleSubmitted(String text) {
     //Widgetで埋め込むための関数ここでChatMessageテキストとコントローラ渡してつくってる
     _textController.clear();
     print(text);
+    /*
+    widget.channel.sink.add(json.encode({
+       "action": "join",
+       "name": widget.auth.uid
+    }));*/
     ChatMessage message = new ChatMessage(
       text: text,
       name: widget.auth.uid,
@@ -51,13 +58,15 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
       ), 
     );
     if(message.text.length > 0){
-      //socketIO.sendMessage('new message', json.encode({'message': text}));
-      /*setState(() {
+      setState(() {
         _messages.insert(0, message);
         //計算量どうなの？メッセージの配列0にインソート
-      });*/
+      });
       //widget.channel.sink.add(message);
-      widget.channel.sink.add(text);
+      widget.channel.sink.add(json.encode({
+       "action": "send",
+       "text": text
+    }));
     }
     message.animationController.forward();
   }
@@ -73,38 +82,31 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
     return new Scaffold(
       appBar: new AppBar(
         title: const Text("チャットページ"),
-        leading:(
-          SignInButtonBuilder(
-            text: 'go to ChatPage',
-            icon: Icons.email,
-            onPressed: () {
-              widget.currentPageChatSelectSet();
-            },
-            backgroundColor: Colors.blueGrey[700],
-          )
+        leading: new IconButton(
+          icon: new Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            widget.currentPageChatSelectSet();
+          },
         )
       ),
       body: new Column(
       children: <Widget>[
         new Flexible(
+          
           //message
           child: StreamBuilder(
             stream: widget.channel.stream,
             builder: (context, snapshot) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24.0),
-                child: Text(snapshot.hasData ? '${snapshot.data}' : ''),
+              return new ListView.builder(
+                padding: new EdgeInsets.all(8.0),
+                reverse: true, 
+                itemBuilder: (_, int index) => _messages[index],
+                //配列作製 謎挙動
+                itemCount: _messages.length,
+                //配列の個数指定 
               );
             },
           )
-          /*new ListView.builder(
-            padding: new EdgeInsets.all(8.0),
-            reverse: true, 
-            itemBuilder: (_, int index) => _messages[index],
-            //配列作製 謎挙動
-            itemCount: _messages.length,
-            //配列の個数指定 
-          ),*/
         ), 
         new Divider(height: 1.0),
         new Container(

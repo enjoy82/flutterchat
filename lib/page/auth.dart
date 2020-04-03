@@ -8,7 +8,7 @@ class BaseAuth  {
   final GoogleSignIn _googleSignIn = new GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   //final BaseUsers _users = new Users();
-  String uid;
+  String uid = "No name";
 
   Future<String> emailSignIn(String email, String password) async {
     if(email.length < 3 || password.length < 7){
@@ -37,6 +37,7 @@ class BaseAuth  {
     );
     //print("signed in " + user.displayName);
     //await _users.update(user.uid);
+    print(user.uid);
     uid = user.uid;
     return uid;
   }

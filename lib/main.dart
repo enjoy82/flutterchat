@@ -106,7 +106,9 @@ class _RootPageState extends State<RootPage> {
             // 請求画面
             return new MainPage(
               auth: widget.auth,
-              currentPageChatSelectSet: () => _updateCurrentPage(CurrentPage.ChatSelectPage)
+              currentPageChatSelectSet: () => _updateCurrentPage(CurrentPage.ChatSelectPage),
+              //取り除く予定
+              onSignOut: () => _updateAuthStatus(AuthStatus.notSignedIn),
             );
         }
       /*case AuthStatus.signedUp:

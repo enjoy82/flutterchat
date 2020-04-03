@@ -8,14 +8,25 @@ import 'auth.dart';
 // メインページ
 // ---------
 class MainPage extends StatelessWidget {
-  MainPage({Key key, this.auth, this.currentPageChatSelectSet}) : super(key: key);
+  MainPage({Key key, this.auth, this.currentPageChatSelectSet, this.onSignOut}) : super(key: key);
   final BaseAuth auth;
   final VoidCallback currentPageChatSelectSet;
-  
+  //取り除く予定
+  final VoidCallback onSignOut;
   final String name = "enjoy";
+
+  void _signout() async {
+    try {
+      await auth.signOut();
+      onSignOut();
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context){
+
     return Scaffold(
       appBar: AppBar(
         title: Text(auth.uid + "のメインページ"),
@@ -26,6 +37,7 @@ class MainPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             gotoChatSelectPageBtn(context),
+            gotoLogInPageBtn(context)
           ]
         ),
       ),
@@ -47,6 +59,23 @@ class MainPage extends StatelessWidget {
             width: 200.0,
           ),
         ]
+      ),
+    );
+  }
+  //取除く予定
+  Widget gotoLogInPageBtn(BuildContext context) {
+    return Center(
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            SignInButtonBuilder(
+              text: 'debug LogInPage',
+              icon: Icons.email,
+              onPressed: _signout,
+              backgroundColor: Colors.blueGrey[700],
+              width: 200.0,
+            ),
+          ]
       ),
     );
   }
