@@ -3,16 +3,17 @@ import 'package:flutter/rendering.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'auth.dart';
+import 'websocket.dart';
 import 'dart:convert';
 
 // ---------
 // チャットページ
 // ---------
 class ChatPage extends StatefulWidget {
-  ChatPage({this.auth, this.currentPageChatSelectSet});
+  ChatPage({this.auth, this.currentPageChatSelectSet, this.ws});
   final BaseAuth auth;
   final VoidCallback currentPageChatSelectSet;
-  final WebSocketChannel channel = IOWebSocketChannel.connect('ws://118.27.27.77:1337');
+  final WebSocket ws;
   @override
   _ChatPage createState() => new _ChatPage();
 }
@@ -44,11 +45,6 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
     //Widgetで埋め込むための関数ここでChatMessageテキストとコントローラ渡してつくってる
     _textController.clear();
     print(text);
-    /*
-    widget.channel.sink.add(json.encode({
-       "action": "join",
-       "name": widget.auth.uid
-    }));*/
     ChatMessage message = new ChatMessage(
       text: text,
       name: widget.auth.uid,
@@ -62,8 +58,7 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
         _messages.insert(0, message);
         //計算量どうなの？メッセージの配列0にインソート
       });
-      //widget.channel.sink.add(message);
-      widget.channel.sink.add(json.encode({
+      widget.ws.channel.sink.add(json.encode({
        "action": "send",
        "text": text
     }));
@@ -74,7 +69,6 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
   void dispose() {
     for (ChatMessage message in _messages)
       message.animationController.dispose();
-    widget.channel.sink.close();
     super.dispose();
   }    
 
@@ -95,7 +89,7 @@ class _ChatPage extends State<ChatPage> with TickerProviderStateMixin{
           
           //message
           child: StreamBuilder(
-            stream: widget.channel.stream,
+            stream: widget.ws.channel.stream,
             builder: (context, snapshot) {
               return new ListView.builder(
                 padding: new EdgeInsets.all(8.0),

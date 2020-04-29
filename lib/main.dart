@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 //Page
 import 'page/MainPage.dart';
 import 'page/LogInPage.dart';
@@ -7,6 +9,8 @@ import 'page/LogInPage.dart';
 import 'page/ChatSelectPage.dart';
 import 'page/ChatPage.dart';
 import 'page/auth.dart';
+import 'page/registerPage.dart';
+import 'page/websocket.dart';
 
 void main() => runApp(MyApp());
 
@@ -16,15 +20,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Firebase Login',
-      home: new RootPage(auth: new BaseAuth())
+      home: new RootPage(
+        auth: new BaseAuth(),
+        ws: new WebSocket()
+      )
     );
   }
 }
 
 class RootPage extends StatefulWidget {
-  RootPage({Key key, this.auth}) : super(key: key);
+  RootPage({Key key, this.auth, this.ws}) : super(key: key);
   final BaseAuth auth;
-
+  final WebSocket ws;
   @override
   State<StatefulWidget> createState() => new _RootPageState();
 }
@@ -41,6 +48,7 @@ enum CurrentPage {
   //MakeEmailAccountPage,
   LogInPage,
   MainPage,
+  RegisterPage,
 }
 
 class _RootPageState extends State<RootPage> {
@@ -48,12 +56,16 @@ class _RootPageState extends State<RootPage> {
   CurrentPage currentPage = CurrentPage.LogInPage;
 
   initState() {
-    super.initState();
-
+    super.initState(); 
     // Firebase 認証 ↓ (02) カレントユーザ情報取得
     widget.auth.currentUser().then((uid) {
       setState(() {
         authStatus = uid != null ? AuthStatus.signedIn : AuthStatus.notSignedIn;
+        if(authStatus == AuthStatus.signedIn){
+          widget.ws.setuid(widget.auth.uid);
+        }else{
+          print("can't sign in");
+        }
       });
     });
   }
@@ -98,15 +110,22 @@ class _RootPageState extends State<RootPage> {
             // チャットページ
             return new ChatPage(
               auth: widget.auth,
-              //currentPageClaimSet: () => _updateCurrentPage(CurrentPage.ChatPage)
+              ws: widget.ws,
               currentPageChatSelectSet: () => _updateCurrentPage(CurrentPage.ChatSelectPage)
+            );
+          case CurrentPage.RegisterPage:
+            print('レジスターページ');
+            return new RegisterPage(
+              auth: widget.auth,
+              ws: widget.ws,
+              currentPageMainSet: () => _updateCurrentPage(CurrentPage.MainPage)
             );
           default:
             print('メインページ');
-            // 請求画面
             return new MainPage(
               auth: widget.auth,
               currentPageChatSelectSet: () => _updateCurrentPage(CurrentPage.ChatSelectPage),
+              currentPageRegisterSet: () => _updateCurrentPage(CurrentPage.RegisterPage),
               //取り除く予定
               onSignOut: () => _updateAuthStatus(AuthStatus.notSignedIn),
             );

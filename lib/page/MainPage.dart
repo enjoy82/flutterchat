@@ -8,12 +8,13 @@ import 'auth.dart';
 // メインページ
 // ---------
 class MainPage extends StatelessWidget {
-  MainPage({Key key, this.auth, this.currentPageChatSelectSet, this.onSignOut}) : super(key: key);
+  MainPage({Key key, this.auth, this.currentPageChatSelectSet, this.currentPageRegisterSet, this.onSignOut}) : super(key: key);
   final BaseAuth auth;
   final VoidCallback currentPageChatSelectSet;
+  final VoidCallback currentPageRegisterSet;
   //取り除く予定
   final VoidCallback onSignOut;
-  final String name = "enjoy";
+  //final String name = "enjoy";
 
   void _signout() async {
     try {
@@ -37,6 +38,7 @@ class MainPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             gotoChatSelectPageBtn(context),
+            gotoRegisterPageBtn(context),
             gotoLogInPageBtn(context)
           ]
         ),
@@ -54,6 +56,25 @@ class MainPage extends StatelessWidget {
             icon: Icons.email,
             onPressed: () {
               currentPageChatSelectSet();
+            },
+            backgroundColor: Colors.blueGrey[700],
+            width: 200.0,
+          ),
+        ]
+      ),
+    );
+  }
+
+  Widget gotoRegisterPageBtn(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          SignInButtonBuilder(
+            text: 'go to RegisterPage',
+            icon: Icons.email,
+            onPressed: () {
+              currentPageRegisterSet();
             },
             backgroundColor: Colors.blueGrey[700],
             width: 200.0,
