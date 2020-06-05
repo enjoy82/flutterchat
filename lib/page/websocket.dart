@@ -13,6 +13,7 @@ class WebSocket {
   }
 
   setuid(String uid){
+    //エラー処理必要　mysqlからエラーしてるか返させる必要あり
     channel.sink.add(json.encode({
        "action": "join",
        "uid": uid

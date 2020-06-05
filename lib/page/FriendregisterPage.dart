@@ -5,27 +5,27 @@ import 'websocket.dart';
 import 'dart:convert';
 
 
-class RegisterPage extends StatefulWidget{
-  RegisterPage({Key key, this.auth, this.ws, this.currentPageMainSet});
+class FriendregisterPage extends StatefulWidget{
+  FriendregisterPage({Key key, this.auth, this.ws, this.currentPageChatSelectSet});
   final BaseAuth auth;
   final WebSocket ws;
-  final VoidCallback currentPageMainSet;
+  final VoidCallback currentPageChatSelectSet;
   @override
-  State createState() => new _RegisterPage();
+  State createState() => new _FriendregisterPage();
 }
 
-class _RegisterPage extends State<RegisterPage> with TickerProviderStateMixin{
-  final usernameController = new TextEditingController();
+class _FriendregisterPage extends State<FriendregisterPage> with TickerProviderStateMixin{
+  final userIDController = new TextEditingController();
 
 
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: const Text("username登録ページ"),
+        title: const Text("friend登録ページ"),
         leading: new IconButton(
           icon: new Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            widget.currentPageMainSet();
+            widget.currentPageChatSelectSet();
           },
         )
       ),
@@ -36,25 +36,35 @@ class _RegisterPage extends State<RegisterPage> with TickerProviderStateMixin{
           child: new Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              new StreamBuilder(
+                stream: widget.ws.channel.stream,
+                builder: (context, snapshot) {
+                  print(snapshot);
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                    child: Text(snapshot.hasData ? '${snapshot.data}' : ''),
+                  );
+                },
+              ),
               const SizedBox(height: 24.0),
               new TextFormField(
-                controller: usernameController,
+                controller: userIDController,
                 decoration: const InputDecoration(
                   border: const UnderlineInputBorder(),
-                  labelText: '新しいusername',
+                  labelText: '`友人のID',
                 ),
               ),
               const SizedBox(height: 24.0),
               new Center(
                 child: new RaisedButton(
-                  child: const Text('set username'),
+                  child: const Text('set friendsID'),
                   onPressed: () {
-                    var username = usernameController.text;
-                    print(username);
+                    var userID = userIDController.text;
+                    print(userID);
                     widget.ws.channel.sink.add(json.encode({
-                      "action": "setnewname",
+                      "action": "registerfrinend",
                       "uid" : widget.auth.uid,
-                      "newname": username
+                      "friendID": userID
                     }));
                   },
                 ),

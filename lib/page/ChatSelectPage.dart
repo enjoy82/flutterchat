@@ -7,9 +7,10 @@ import 'auth.dart';
 // チャットセレクトページ
 // ---------
 class ChatSelectPage extends StatefulWidget {
-  ChatSelectPage({Key key, this.auth, this.currentPageChatSet, this.currentPageMainSet}) : super(key: key);
+  ChatSelectPage({Key key, this.auth, this.currentPageChatSet,this.currentPageFriendregisterSet, this.currentPageMainSet}) : super(key: key);
   final BaseAuth auth;
   final VoidCallback currentPageChatSet;
+  final VoidCallback currentPageFriendregisterSet;
   final VoidCallback currentPageMainSet;
   @override
   State createState() => new _ChatSelectPage();
@@ -30,6 +31,7 @@ class _ChatSelectPage extends State<ChatSelectPage>{
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             gotoChatPageBtn(),
+            gotoFriendregisterPageBtn(),
             gotoMainBtn(),
           ]
         ),
@@ -47,6 +49,24 @@ class _ChatSelectPage extends State<ChatSelectPage>{
             icon: Icons.email,
             onPressed: () {
               widget.currentPageChatSet();
+            },
+            backgroundColor: Colors.blueGrey[700],
+            width: 200.0,
+          ),
+        ]
+      ),
+    );
+  }
+  Widget gotoFriendregisterPageBtn() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          SignInButtonBuilder(
+            text: 'go to Friendregister',
+            icon: Icons.email,
+            onPressed: () {
+              widget.currentPageFriendregisterSet();
             },
             backgroundColor: Colors.blueGrey[700],
             width: 200.0,
